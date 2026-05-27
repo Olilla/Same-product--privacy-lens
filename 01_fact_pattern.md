@@ -1,0 +1,67 @@
+# Phase 1 — Fact Pattern
+
+## GDPR Audit Pack | Ecommerce Company GmbH
+
+---
+
+## Client profile
+
+**Ecommerce Company GmbH** is a mid-size German online retailer headquartered in Hamburg, employing approximately 280 people and generating around €95 million in annual revenue. The company sells a broad range of household goods, electronics, and personal care products directly to consumers through its website and mobile app. Ecommerce Company has no physical stores. Its primary markets are Germany, Austria, and the Netherlands, meaning virtually all data subjects are EU/EEA residents. The company processes data under German law and is supervised by the Hamburg Data Protection Authority (HmbBfDI).
+
+---
+
+## What personal data is involved
+
+Ecommerce Company processes the following categories of personal data as part of its personalisation initiative:
+
+- **Behavioural and clickstream data** collected via first-party cookies and session tracking: pages visited, products viewed, time on page, search queries entered on-site, add-to-cart events.
+- **Purchase history**: product identifiers, order amounts, payment method type (not card numbers), delivery address, and order timestamps.
+- **Account data** for registered users: full name, email address, hashed password, date of account creation, and language preference.
+- **Device and browser fingerprint data**: IP address (truncated to /24 for analytics), user-agent string, screen resolution, and browser language.
+- **Inferred preference scores**: the AI system generates a per-user vector of product affinity scores, stored as a derived profile attribute. These scores are not disclosed to the user but drive the recommendation carousel on the homepage and in transactional emails.
+
+Approximately 1.4 million registered users are in scope, plus an estimated 600,000 monthly anonymous (cookie-identified) visitors.
+
+No special-category data under Article 9 is intentionally collected. However, purchase history may allow inference of health-related preferences (e.g., dietary supplements, medical devices for home use), which creates a latent Article 9 exposure that must be flagged.
+
+---
+
+## Who are the data subjects
+
+- **Registered customers** (EU/EEA residents, predominantly German, Austrian, and Dutch nationals). These individuals have accepted Ecommerce Company's terms and, depending on cookie banner interaction, may or may not have consented to analytics cookies.
+- **Anonymous visitors** identified only by a cookie ID. No account linkage unless the user later logs in, at which point the session history may be merged with the account profile.
+- No employees or job applicants are in scope for this scenario.
+
+---
+
+## Vendor stack — non-EU processors
+
+| Vendor | Role | Location |
+|---|---|---|
+| **DataPulse Inc.** | Analytics platform and ML model inference engine. Receives event streams (clickstream, purchase events) in near real-time. Hosts the recommendation model training pipeline. | Delaware, USA |
+| **SendGrid (Twilio)** | Transactional and marketing email delivery. Receives name, email address, and recommendation payload for personalised emails. | USA |
+| **AWS Frankfurt (eu-central-1)** | Primary cloud infrastructure for Ecommerce Company's own systems. Storage of raw logs and user profiles. | Germany (EU) |
+
+DataPulse Inc. is the most significant non-EU processor in the stack. It currently operates under a Data Processing Agreement signed in 2021, which pre-dates the new Standard Contractual Clauses (SCCs) adopted by the Commission in June 2021. The DPA has not been updated.
+
+---
+
+## What the AI system does
+
+Ecommerce Company's recommendation engine is a collaborative filtering model trained on aggregated purchase and browsing history. It runs as a real-time inference API: when a user loads the homepage or a category page, a request is sent to DataPulse's inference endpoint with the user's cookie ID (for anonymous visitors) or account ID (for registered users). DataPulse returns a ranked list of product identifiers, which Ecommerce Company's front-end renders as a "Recommended for you" carousel.
+
+The same recommendation payload is also used to populate personalised sections in weekly marketing emails, where the subject line is dynamically generated based on the top recommended category.
+
+Model retraining occurs weekly. Ecommerce Company transfers a batch export of the previous seven days of event data (approximately 40 GB per batch) to DataPulse's S3 bucket for retraining. This batch includes pseudonymised but re-identifiable records (cookie ID, account ID where available, event type, timestamp, product ID).
+
+---
+
+## Automated decision-making exposure
+
+The recommendation system does not directly accept or reject users, alter prices, or restrict access to the platform. However, it does produce **differential content exposure**: some users see promotions others do not, and email open rates and click-through rates generated by the system feed back into DataPulse's model. The question of whether this constitutes "automated decision-making with legal or similarly significant effects" under Article 22 is explored in the audit worksheet. The preliminary view is that it likely falls below the Article 22 threshold but warrants a documented proportionality assessment.
+
+---
+
+## Transition note (AI Act cross-reference)
+
+This scenario was not carried forward from an EU AI Act lab partner exercise. For the law stacking section, the recommendation engine would most plausibly be classified as a **minimal risk** system under the EU AI Act (no prohibited-use category, no high-risk annex III application), with the possible caveat that personalisation systems used in consumer-facing contexts may attract additional transparency obligations under Article 50 if the system generates synthetic text (e.g., AI-drafted subject lines). This is flagged in Section C of the audit worksheet.
