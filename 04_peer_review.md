@@ -5,6 +5,16 @@
 
 ---
 
+## Scoring key
+
+| Score | Meaning |
+|---|---|
+| **1** | Does not meet the criterion: not addressed or addressed incorrectly |
+| **2** | Partially meets the criterion: present but has relevant gaps |
+| **3** | Fully meets the criterion: specific, correct, and requires no further work |
+
+---
+
 ## Rubric scores
 
 | Criterion | Score (1–3) | Comment |
